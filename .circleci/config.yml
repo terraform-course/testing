@@ -1,0 +1,30 @@
+version: 2.1
+jobs:
+  test:
+    docker:
+      - image: snyk/snyk-cli:docker
+        environment: 
+          SNYK_TOKEN: $SNYK_TOKEN
+    steps:
+      - checkout
+      - run:
+          name: snyk iac tesst
+          command: |
+            find . -not -path '*/\.*' -type f -name "*.tf" | xargs snyk iac test --severity-threshold=high
+  deploy:
+    docker:
+      - image: hashicorp/terraform:0.13.6
+    steps:
+      - checkout
+      - run:
+          name: terraform version
+          command: |
+            terraform version
+workflows:
+  version: 2
+  test_and_deploy:
+    jobs:
+      - test
+      - deploy:
+          requires:
+          - test
